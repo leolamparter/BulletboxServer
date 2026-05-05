@@ -1,0 +1,14 @@
+/Users/Movies/BulletboxServer/bin/Debug/net10.0/BulletboxServer
+/Users/Movies/BulletboxServer/bin/Debug/net10.0/BulletboxServer.deps.json
+/Users/Movies/BulletboxServer/bin/Debug/net10.0/BulletboxServer.runtimeconfig.json
+/Users/Movies/BulletboxServer/bin/Debug/net10.0/BulletboxServer.dll
+/Users/Movies/BulletboxServer/bin/Debug/net10.0/BulletboxServer.pdb
+/Users/Movies/BulletboxServer/obj/Debug/net10.0/BulletboxServer.GeneratedMSBuildEditorConfig.editorconfig
+/Users/Movies/BulletboxServer/obj/Debug/net10.0/BulletboxServer.AssemblyInfoInputs.cache
+/Users/Movies/BulletboxServer/obj/Debug/net10.0/BulletboxServer.AssemblyInfo.cs
+/Users/Movies/BulletboxServer/obj/Debug/net10.0/BulletboxServer.csproj.CoreCompileInputs.cache
+/Users/Movies/BulletboxServer/obj/Debug/net10.0/BulletboxServer.dll
+/Users/Movies/BulletboxServer/obj/Debug/net10.0/refint/BulletboxServer.dll
+/Users/Movies/BulletboxServer/obj/Debug/net10.0/BulletboxServer.pdb
+/Users/Movies/BulletboxServer/obj/Debug/net10.0/BulletboxServer.genruntimeconfig.cache
+/Users/Movies/BulletboxServer/obj/Debug/net10.0/ref/BulletboxServer.dll
