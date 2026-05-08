@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using System.Numerics;
 
 // Data structure must match client exactly
 public struct ItemStack {
@@ -20,6 +21,9 @@ public class Player
     private NetworkStream _stream;
     private BinaryReader _reader;
     public BinaryWriter Writer;
+    private DateTime _lastAttackTime = DateTime.MinValue;
+    private DateTime _lastHitTime = DateTime.MinValue;
+    public int SelectedSlot = 0;
 
     // The Server's source of truth
     public ItemStack[] Inventory = new ItemStack[24];
@@ -50,9 +54,11 @@ public class Player
                     
                     world.UpdatePosition(Username, 400, 300);
                     
-                    // 1. Setup starting items
-                    Inventory[0] = new ItemStack((byte)'A', 5);
-                    Inventory[2] = new ItemStack((byte)'D', 30);
+                    // Give them the heavy hitter and the fast hitter
+                    Inventory[0] = new ItemStack((byte)'K', 1); // Kanabo (Slot 1)
+                    Inventory[1] = new ItemStack((byte)'S', 1); // Sword (Slot 2)
+                    Inventory[2] = new ItemStack((byte)'D', 1); // Dagger (Slot 3)
+                    Inventory[3] = new ItemStack((byte)'P', 1); // Spear (Slot 4)
 
                     // 2. Send Login Success
                     Writer.Write((byte)0);
@@ -70,6 +76,10 @@ public class Player
                     world.UpdatePosition(Username, x, y);
                     BroadcastMove(Username, x, y);
                 }
+                else if (packetId == 2) // Slot Selection
+                {
+                    SelectedSlot = _reader.ReadByte();
+                }
                 else if (packetId == 3) // Move Item Request
                 {
                     byte from = _reader.ReadByte();
@@ -83,32 +93,42 @@ public class Player
                     // Sync change back to client
                     SendFullInventory();
                 }
-                // Inside Player.Listen() loop
-                else if (packetId == 6) // Attack Packet
-                {
+                else if (packetId == 6) {
                     string victimName = _reader.ReadString();
+                    byte heldId = Inventory[SelectedSlot].ItemID; 
 
-                    // 1. Find the victim in the connected players list
-                    Player victim = Program.ConnectedPlayers.Find(p => p.Username == victimName);
+                    float elapsed = (float)(DateTime.Now - _lastAttackTime).TotalSeconds;
+                    float timeSinceHit = (float)(DateTime.Now - _lastHitTime).TotalSeconds;
 
-                    if (victim != null && victim.Username != this.Username)
-                    {
-                        // 2. Get positions from the World source of truth
-                        Vector2 myPos = world.PlayerLocations[this.Username];
-                        Vector2 victimPos = world.PlayerLocations[victim.Username];
+                    var (dmg, kb, range) = WeaponStats.Calculate(heldId, elapsed, timeSinceHit);
 
-                        // 3. Distance Check (400 units)
-                        float distance = Vector2.Distance(myPos, victimPos);
+                    if (dmg > 0) {
+                        Player? victim = Program.ConnectedPlayers.Find(p => p.Username == victimName);
+                        if (victim != null) {
+                            Vector2 myPos = world.PlayerLocations[this.Username];
+                            Vector2 victimPos = world.PlayerLocations[victim.Username];
+                            float dist = Vector2.Distance(myPos, victimPos);
 
-                        if (distance <= 400f)
-                        {
-                            // 4. Apply damage using the authoritative method we made
-                            victim.TakeDamage(5); 
+                            if (dist <= range) {
+                                _lastAttackTime = DateTime.Now; // Log the attempt
+                                _lastHitTime = DateTime.Now;   // Log the success for combo
+                                
+                                victim.Damage((int)dmg);
+
+                                // Apply Knockback
+                                if (Math.Abs(kb) > 0.1f) {
+                                    Vector2 dir = Vector2.Normalize(victimPos - myPos);
+                                    victim.Writer.Write((byte)7); // Packet ID 7: Knockback
+                                    victim.Writer.Write(dir.X * kb);
+                                    victim.Writer.Write(dir.Y * kb);
+                                    victim.Writer.Flush();
+                                }
+                            }
                         }
-                        else 
-                        {
-                            Console.WriteLine($"[PVP] {Username} tried to attack {victimName} but was too far! ({distance})");
-                        }
+                    }
+                    else {
+                        // Even if they do 0 damage, we reset attack time so they can't spam
+                        _lastAttackTime = DateTime.Now;
                     }
                 }
             }
