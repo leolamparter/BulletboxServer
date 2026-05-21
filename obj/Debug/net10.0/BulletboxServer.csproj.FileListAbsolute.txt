@@ -26,3 +26,4 @@
 /Users/Movies/Bulletbox/BulletboxServer/obj/Debug/net10.0/BulletboxServer.pdb
 /Users/Movies/Bulletbox/BulletboxServer/obj/Debug/net10.0/BulletboxServer.genruntimeconfig.cache
 /Users/Movies/Bulletbox/BulletboxServer/obj/Debug/net10.0/ref/BulletboxServer.dll
+/Users/Movies/Bulletbox/BulletboxServer/obj/Debug/net10.0/BulletboxServer.sourcelink.json
