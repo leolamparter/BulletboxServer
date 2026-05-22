@@ -93,6 +93,18 @@ public class Player
                     // Sync change back to client
                     SendFullInventory();
                 }
+                else if (packetId == 10) // Chunk Request (NEW)
+                {
+                    int chunkX = _reader.ReadInt32();
+                    int chunkY = _reader.ReadInt32();
+                    var chunk = world.GetOrGenerateChunk(chunkX, chunkY);
+                    // Respond with chunk data
+                    Writer.Write((byte)10); // Packet ID 10: Chunk Data
+                    Writer.Write(chunk.Coord.X);
+                    Writer.Write(chunk.Coord.Y);
+                    Writer.Write((byte)chunk.Biome);
+                    Writer.Flush();
+                }
                 else if (packetId == 6) {
                     string victimName = _reader.ReadString();
                     byte heldId = Inventory[SelectedSlot].ItemID; 
