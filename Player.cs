@@ -13,6 +13,7 @@ public struct ItemStack {
 
 public class Player
 {
+
     public string Username = "";
     public int Health = 100;
     public int MaxHealth = 100;
@@ -50,23 +51,19 @@ public class Player
                 if (packetId == 0) // Login
                 {
                     Username = _reader.ReadString();
+                    string clientVer = _reader.ReadString();
                     _reader.ReadString(); // password
                     
                     world.UpdatePosition(Username, 400, 300);
                     
-                    // Give them the heavy hitter and the fast hitter
-                    Inventory[0] = new ItemStack((byte)'K', 1); // Kanabo (Slot 1)
-                    Inventory[1] = new ItemStack((byte)'S', 1); // Sword (Slot 2)
-                    Inventory[2] = new ItemStack((byte)'D', 1); // Dagger (Slot 3)
-                    Inventory[3] = new ItemStack((byte)'P', 1); // Spear (Slot 4)
+                    Inventory[0] = new ItemStack((byte)'K', 1); 
+                    Inventory[1] = new ItemStack((byte)'S', 1);
+                    Inventory[2] = new ItemStack((byte)'D', 1);
+                    Inventory[3] = new ItemStack((byte)'P', 1);
 
-                    // 2. Send Login Success
                     Writer.Write((byte)0);
                     Writer.Write(true);
-                    
-                    // 3. Send Initial Inventory
                     SendFullInventory();
-                    
                     Console.WriteLine($"[Handshake] {Username} is in.");
                 }
                 else if (packetId == 1) // Move Player
@@ -78,20 +75,22 @@ public class Player
                 }
                 else if (packetId == 2) // Slot Selection
                 {
-                    SelectedSlot = _reader.ReadByte();
+                    byte slot = _reader.ReadByte();
+                    if (slot < 24) SelectedSlot = slot;
                 }
                 else if (packetId == 3) // Move Item Request
                 {
                     byte from = _reader.ReadByte();
                     byte to = _reader.ReadByte();
                     
-                    // Swap items in server memory
-                    ItemStack temp = Inventory[from];
-                    Inventory[from] = Inventory[to];
-                    Inventory[to] = temp;
-
-                    // Sync change back to client
-                    SendFullInventory();
+                    if (from < 24 && to < 24)
+                    {
+                        // Swap items in server memory
+                        ItemStack temp = Inventory[from];
+                        Inventory[from] = Inventory[to];
+                        Inventory[to] = temp;
+                        SendFullInventory();
+                    }
                 }
                 else if (packetId == 10) // Chunk Request (NEW)
                 {

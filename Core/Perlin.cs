@@ -39,11 +39,8 @@ public static class Perlin
     // Returns value in range [-1, 1]
     public static float Noise(float x, float y)
     {
-        int scale = 4;
         int X = (int)MathF.Floor(x) & 255;
         int Y = (int)MathF.Floor(y) & 255;
-        X = X*scale;
-        Y = Y*scale;
         x -= MathF.Floor(x);
         y -= MathF.Floor(y);
         float u = Fade(x);
