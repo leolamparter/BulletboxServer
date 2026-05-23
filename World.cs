@@ -4,7 +4,13 @@ using System.Numerics;
 public enum BiomeType
 {
     Meadow,
-    Forest
+    Forest,
+    Desert,
+    StonyPeaks,
+    Ocean,
+    Beach,
+    BrimstoneSprings,
+    River
 }
 
 public struct ChunkCoord
@@ -52,12 +58,34 @@ public class World
         var coord = new ChunkCoord(chunkX, chunkY);
         if (!Chunks.TryGetValue(coord, out var chunk))
         {
-            // Use Perlin noise for smooth biome transitions
-            float scale = 0.08f; // Lower = larger biomes
+            // Dedicated low-frequency noise for rare but massive oceans
+            float oceanNoise = (Perlin.Noise(chunkX * 0.003f, chunkY * 0.003f) + 1f) * 0.5f;
+            float scale = 0.008f;
+            float riverNoise = Perlin.Noise(chunkX * 0.025f, chunkY * 0.025f);
             float noise = Perlin.Noise(chunkX * scale, chunkY * scale);
-            // Normalize noise to [0,1]
-            float n = (noise + 1f) * 0.5f;
-            var biome = n < 0.5f ? BiomeType.Meadow : BiomeType.Forest;
+            float noise2 = Perlin.Noise(chunkX * scale * 0.5f + 1000, chunkY * scale * 0.5f - 1000) * 0.5f;
+            float n = (noise + noise2 + 1f) * 0.5f;
+            float landNoise = Perlin.Noise(chunkX * 0.018f + 5000, chunkY * 0.018f - 5000);
+            float landN = (landNoise + 1f) * 0.5f;
+
+            BiomeType biome;
+            if (oceanNoise < 0.25f) {
+                biome = BiomeType.Ocean;
+            } else if (oceanNoise < 0.30f) {
+                biome = BiomeType.Beach;
+            } else if (Math.Abs(riverNoise) < 0.035f) {
+                biome = BiomeType.River;
+            } else if (n > 0.80f) {
+                biome = BiomeType.BrimstoneSprings;
+            } else if (n < 0.20f) {
+                biome = BiomeType.StonyPeaks;
+            } else if (landN < 0.46f) {
+                biome = BiomeType.Meadow;
+            } else if (landN < 0.54f) {
+                biome = BiomeType.Forest;
+            } else {
+                biome = BiomeType.Desert;
+            }
             chunk = new Chunk(coord, biome);
             Chunks[coord] = chunk;
         }
