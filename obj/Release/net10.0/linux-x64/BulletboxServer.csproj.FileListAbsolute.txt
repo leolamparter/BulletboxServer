@@ -1,0 +1,15 @@
+/Users/Movies/Bulletbox/BulletboxServer/bin/Release/net10.0/linux-x64/BulletboxServer
+/Users/Movies/Bulletbox/BulletboxServer/bin/Release/net10.0/linux-x64/BulletboxServer.deps.json
+/Users/Movies/Bulletbox/BulletboxServer/bin/Release/net10.0/linux-x64/BulletboxServer.runtimeconfig.json
+/Users/Movies/Bulletbox/BulletboxServer/bin/Release/net10.0/linux-x64/BulletboxServer.dll
+/Users/Movies/Bulletbox/BulletboxServer/bin/Release/net10.0/linux-x64/BulletboxServer.pdb
+/Users/Movies/Bulletbox/BulletboxServer/obj/Release/net10.0/linux-x64/BulletboxServer.GeneratedMSBuildEditorConfig.editorconfig
+/Users/Movies/Bulletbox/BulletboxServer/obj/Release/net10.0/linux-x64/BulletboxServer.AssemblyInfoInputs.cache
+/Users/Movies/Bulletbox/BulletboxServer/obj/Release/net10.0/linux-x64/BulletboxServer.AssemblyInfo.cs
+/Users/Movies/Bulletbox/BulletboxServer/obj/Release/net10.0/linux-x64/BulletboxServer.csproj.CoreCompileInputs.cache
+/Users/Movies/Bulletbox/BulletboxServer/obj/Release/net10.0/linux-x64/BulletboxServer.sourcelink.json
+/Users/Movies/Bulletbox/BulletboxServer/obj/Release/net10.0/linux-x64/BulletboxServer.dll
+/Users/Movies/Bulletbox/BulletboxServer/obj/Release/net10.0/linux-x64/refint/BulletboxServer.dll
+/Users/Movies/Bulletbox/BulletboxServer/obj/Release/net10.0/linux-x64/BulletboxServer.pdb
+/Users/Movies/Bulletbox/BulletboxServer/obj/Release/net10.0/linux-x64/BulletboxServer.genruntimeconfig.cache
+/Users/Movies/Bulletbox/BulletboxServer/obj/Release/net10.0/linux-x64/ref/BulletboxServer.dll

@@ -1,0 +1,5 @@
+/Users/Movies/Bulletbox/BulletboxServer/bin/Release/net10.0/linux-x64/publish/BulletboxServer
+/Users/Movies/Bulletbox/BulletboxServer/bin/Release/net10.0/linux-x64/publish/BulletboxServer.dll
+/Users/Movies/Bulletbox/BulletboxServer/bin/Release/net10.0/linux-x64/publish/BulletboxServer.deps.json
+/Users/Movies/Bulletbox/BulletboxServer/bin/Release/net10.0/linux-x64/publish/BulletboxServer.runtimeconfig.json
+/Users/Movies/Bulletbox/BulletboxServer/bin/Release/net10.0/linux-x64/publish/BulletboxServer.pdb
