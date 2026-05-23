@@ -17,6 +17,7 @@ public class Player
     public string Username = "";
     public int Health = 100;
     public int MaxHealth = 100;
+    public float Rotation = 0f;
 
     private TcpClient _client;
     private NetworkStream _stream;
@@ -25,6 +26,8 @@ public class Player
     private DateTime _lastAttackTime = DateTime.MinValue;
     private DateTime _lastHitTime = DateTime.MinValue;
     public int SelectedSlot = 0;
+
+    public readonly object WriterLock = new();
 
     // The Server's source of truth
     public ItemStack[] Inventory = new ItemStack[24];
@@ -61,17 +64,21 @@ public class Player
                     Inventory[2] = new ItemStack((byte)'D', 1);
                     Inventory[3] = new ItemStack((byte)'P', 1);
 
-                    Writer.Write((byte)0);
-                    Writer.Write(true);
-                    SendFullInventory();
+                    lock (WriterLock)
+                    {
+                        Writer.Write((byte)0);
+                        Writer.Write(true);
+                        SendFullInventory();
+                    }
                     Console.WriteLine($"[Handshake] {Username} is in.");
                 }
                 else if (packetId == 1) // Move Player
                 {
                     float x = _reader.ReadSingle();
                     float y = _reader.ReadSingle();
+                    Rotation = _reader.ReadSingle();
                     world.UpdatePosition(Username, x, y);
-                    BroadcastMove(Username, x, y);
+                    BroadcastMove(Username, x, y, Rotation, Inventory[SelectedSlot].ItemID);
                 }
                 else if (packetId == 2) // Slot Selection
                 {
@@ -98,12 +105,15 @@ public class Player
                     int chunkY = _reader.ReadInt32();
                     var chunk = world.GetOrGenerateChunk(chunkX, chunkY);
                     // Respond with chunk data
-                    Writer.Write((byte)10); // Packet ID 10: Chunk Data
-                    Writer.Write(chunk.Coord.X);
-                    Writer.Write(chunk.Coord.Y);
-                    Writer.Write((byte)chunk.Biome);
-                    Writer.Write((byte)chunk.Feature);
-                    Writer.Flush();
+                    lock (WriterLock)
+                    {
+                        Writer.Write((byte)10); // Packet ID 10: Chunk Data
+                        Writer.Write(chunk.Coord.X);
+                        Writer.Write(chunk.Coord.Y);
+                        Writer.Write((byte)chunk.Biome);
+                        Writer.Write((byte)chunk.Feature);
+                        Writer.Flush();
+                    }
                 }
                 else if (packetId == 6) {
                     string victimName = _reader.ReadString();
@@ -115,7 +125,12 @@ public class Player
                     var (dmg, kb, range) = WeaponStats.Calculate(heldId, elapsed, timeSinceHit);
 
                     if (dmg > 0) {
-                        Player? victim = Program.ConnectedPlayers.Find(p => p.Username == victimName);
+                        Player? victim;
+                        lock (Program.ConnectedPlayers)
+                        {
+                            victim = Program.ConnectedPlayers.Find(p => p.Username == victimName);
+                        }
+
                         if (victim != null) {
                             Vector2 myPos = world.PlayerLocations[this.Username];
                             Vector2 victimPos = world.PlayerLocations[victim.Username];
@@ -130,10 +145,13 @@ public class Player
                                 // Apply Knockback
                                 if (Math.Abs(kb) > 0.1f) {
                                     Vector2 dir = Vector2.Normalize(victimPos - myPos);
-                                    victim.Writer.Write((byte)7); // Packet ID 7: Knockback
-                                    victim.Writer.Write(dir.X * kb);
-                                    victim.Writer.Write(dir.Y * kb);
-                                    victim.Writer.Flush();
+                                    lock (victim.WriterLock)
+                                    {
+                                        victim.Writer.Write((byte)7); // Packet ID 7: Knockback
+                                        victim.Writer.Write(dir.X * kb);
+                                        victim.Writer.Write(dir.Y * kb);
+                                        victim.Writer.Flush();
+                                    }
                                 }
                             }
                         }
@@ -143,6 +161,12 @@ public class Player
                         _lastAttackTime = DateTime.Now;
                     }
                 }
+                else if (packetId == 8) // Chat Message
+                {
+                    string msg = _reader.ReadString();
+                    Console.WriteLine($"[Chat] {Username}: {msg}");
+                    BroadcastChat(Username, msg);
+                }
             }
         }
         catch (Exception e) { Console.WriteLine($"Client Error: {e.Message}"); }
@@ -150,26 +174,64 @@ public class Player
     }
 
     public void SendFullInventory() {
-        Writer.Write((byte)4); // Packet ID 4: Sync
-        for (int i = 0; i < 24; i++) {
-            Writer.Write(Inventory[i].ItemID);
-            Writer.Write(Inventory[i].Count);
+        lock (WriterLock)
+        {
+            Writer.Write((byte)4); // Packet ID 4: Sync
+            for (int i = 0; i < 24; i++) {
+                Writer.Write(Inventory[i].ItemID);
+                Writer.Write(Inventory[i].Count);
+            }
+            Writer.Flush();
         }
-        Writer.Flush();
     }
 
-    private void BroadcastMove(string name, float x, float y)
+    private void BroadcastMove(string name, float x, float y, float rot, byte heldItemId)
     {
-        foreach (var p in Program.ConnectedPlayers)
+        List<Player> playersToNotify;
+        lock (Program.ConnectedPlayers)
+        {
+            playersToNotify = new List<Player>(Program.ConnectedPlayers);
+        }
+
+        foreach (var p in playersToNotify)
         {
             try {
                 if (p.Username == name) continue; 
-                p.Writer.Write((byte)1);
-                p.Writer.Write(name);
-                p.Writer.Write(x);
-                p.Writer.Write(y);
-                p.Writer.Flush();
+                lock (p.WriterLock)
+                {
+                    p.Writer.Write((byte)1);
+                    p.Writer.Write(name);
+                    p.Writer.Write(x);
+                    p.Writer.Write(y);
+                    p.Writer.Write(rot);
+                    p.Writer.Write(heldItemId);
+                    p.Writer.Flush();
+                }
             } catch { }
+        }
+    }
+
+    private void BroadcastChat(string sender, string message)
+    {
+        List<Player> playersToNotify;
+        lock (Program.ConnectedPlayers)
+        {
+            playersToNotify = new List<Player>(Program.ConnectedPlayers);
+        }
+
+        foreach (var p in playersToNotify)
+        {
+            try
+            {
+                lock (p.WriterLock)
+                {
+                    p.Writer.Write((byte)8); // Packet ID 8: Chat
+                    p.Writer.Write(sender);
+                    p.Writer.Write(message);
+                    p.Writer.Flush();
+                }
+            }
+            catch { }
         }
     }
 
@@ -205,9 +267,12 @@ public class Player
     public void SyncHealth()
     {
         if (!_client.Connected) return;
-        Writer.Write((byte)5); // Packet ID 5: Health Sync
-        Writer.Write(Health);
-        Writer.Write(MaxHealth);
-        Writer.Flush();
+        lock (WriterLock)
+        {
+            Writer.Write((byte)5); // Packet ID 5: Health Sync
+            Writer.Write(Health);
+            Writer.Write(MaxHealth);
+            Writer.Flush();
+        }
     }
 }
