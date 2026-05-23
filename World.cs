@@ -13,6 +13,23 @@ public enum BiomeType
     River
 }
 
+public enum FeatureType
+{
+    None,
+    SmallTree,
+    LargeTree,
+    MeadowHedge,
+    MeadowFlowers,
+    Stone,
+    PalmTree,
+    DesertLog,
+    Tumbleweed,
+    OasisDesert,
+    BeachUmbrella,
+    Sailboat,
+    SulfurSpring
+}
+
 public struct ChunkCoord
 {
     public int X;
@@ -26,10 +43,12 @@ public class Chunk
 {
     public ChunkCoord Coord;
     public BiomeType Biome;
-    public Chunk(ChunkCoord coord, BiomeType biome)
+    public FeatureType Feature;
+    public Chunk(ChunkCoord coord, BiomeType biome, FeatureType feature = FeatureType.None)
     {
         Coord = coord;
         Biome = biome;
+        Feature = feature;
     }
 }
 
@@ -86,8 +105,61 @@ public class World
             } else {
                 biome = BiomeType.Desert;
             }
-            chunk = new Chunk(coord, biome);
+
+                        chunk = new Chunk(coord, biome);
+            
+            // Feature Generation (Reduced density to prevent "piling")
+            int fHash = (chunkX * 73856093) ^ (chunkY * 19349663);
+            int roll = Math.Abs(fHash) % 1000; // Switch to 1000 for finer control
+
+            if (biome == BiomeType.Forest)
+            {
+                if (roll < 25) // 2.5% density
+                {
+                    int sub = Math.Abs(fHash >> 8) % 100;
+                    if (sub < 60) chunk.Feature = FeatureType.SmallTree;
+                    else if (sub < 90) chunk.Feature = FeatureType.LargeTree;
+                    else chunk.Feature = FeatureType.Stone;
+                }
+            }
+            else if (biome == BiomeType.Meadow)
+            {
+                if (roll < 40) // 4% density
+                {
+                    int sub = Math.Abs(fHash >> 8) % 100;
+                    chunk.Feature = (sub < 30) ? FeatureType.MeadowHedge : FeatureType.MeadowFlowers;
+                }
+            }
+            else if (biome == BiomeType.Desert)
+            {
+                if (roll < 15) // 1.5% density
+                {
+                    int sub = Math.Abs(fHash >> 8) % 100;
+                    if (sub < 50) chunk.Feature = FeatureType.Tumbleweed;
+                    else if (sub < 85) chunk.Feature = FeatureType.DesertLog;
+                    else if (sub < 95) chunk.Feature = FeatureType.PalmTree;
+                    else chunk.Feature = FeatureType.OasisDesert;
+                }
+            }
+            else if (biome == BiomeType.Beach)
+            {
+                if (roll < 10) chunk.Feature = (Math.Abs(fHash >> 8) % 10 < 8) ? FeatureType.PalmTree : FeatureType.BeachUmbrella;
+            }
+            else if (biome == BiomeType.StonyPeaks)
+            {
+                if (roll < 30) chunk.Feature = FeatureType.Stone;
+            }
+            else if (biome == BiomeType.Ocean)
+            {
+                if (roll < 2) chunk.Feature = FeatureType.Sailboat;
+            }
+            else if (biome == BiomeType.BrimstoneSprings)
+            {
+                if (roll < 20) chunk.Feature = (Math.Abs(fHash >> 8) % 10 < 4) ? FeatureType.SulfurSpring : FeatureType.Stone;
+            }
+
             Chunks[coord] = chunk;
+
         }
         return chunk;
     }

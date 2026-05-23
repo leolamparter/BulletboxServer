@@ -102,6 +102,7 @@ public class Player
                     Writer.Write(chunk.Coord.X);
                     Writer.Write(chunk.Coord.Y);
                     Writer.Write((byte)chunk.Biome);
+                    Writer.Write((byte)chunk.Feature);
                     Writer.Flush();
                 }
                 else if (packetId == 6) {
