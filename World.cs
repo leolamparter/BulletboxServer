@@ -61,6 +61,7 @@ public class World
     private ConcurrentDictionary<ChunkCoord, Chunk> Chunks = new();
     private static readonly Random rng = new();
     public const int ChunkSize = 16; // Very small chunks
+    public int Seed = rng.Next(-1000000, 1000000);
 
     public void UpdatePosition(string username, float x, float y)
     {
@@ -77,11 +78,14 @@ public class World
         var coord = new ChunkCoord(chunkX, chunkY);
         if (!Chunks.TryGetValue(coord, out var chunk))
         {
+            float sx = chunkX + (Seed % 5000);
+            float sy = chunkY + (Seed / 5000);
+
             // Dedicated low-frequency noise for rare but massive oceans
-            float oceanNoise = (Perlin.Noise(chunkX * 0.003f, chunkY * 0.003f) + 1f) * 0.5f;
+            float oceanNoise = (Perlin.Noise(sx * 0.003f, sy * 0.003f) + 1f) * 0.5f;
             float scale = 0.008f;
-            float riverNoise = Perlin.Noise(chunkX * 0.025f, chunkY * 0.025f);
-            float noise = Perlin.Noise(chunkX * scale, chunkY * scale);
+            float riverNoise = Perlin.Noise(sx * 0.025f, sy * 0.025f);
+            float noise = Perlin.Noise(sx * scale, sy * scale);
             float noise2 = Perlin.Noise(chunkX * scale * 0.5f + 1000, chunkY * scale * 0.5f - 1000) * 0.5f;
             float n = (noise + noise2 + 1f) * 0.5f;
             float landNoise = Perlin.Noise(chunkX * 0.018f + 5000, chunkY * 0.018f - 5000);
@@ -109,7 +113,7 @@ public class World
                         chunk = new Chunk(coord, biome);
             
             // Feature Generation (Reduced density to prevent "piling")
-            int fHash = (chunkX * 73856093) ^ (chunkY * 19349663);
+            int fHash = (chunkX * 73856093) ^ (chunkY * 19349663) ^ Seed;
             int roll = Math.Abs(fHash) % 1000; // Switch to 1000 for finer control
 
             if (biome == BiomeType.Forest)
