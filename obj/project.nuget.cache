@@ -1,10 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Gzi19bj/dEI=",
+  "dgSpecHash": "GcT4RPFo6DI=",
   "success": true,
   "projectFilePath": "/Users/Movies/Bulletbox/BulletboxServer/BulletboxServer.csproj",
-  "expectedPackageFiles": [
-    "/Users/Movies/.nuget/packages/microsoft.netcore.app.host.linux-x64/10.0.7/microsoft.netcore.app.host.linux-x64.10.0.7.nupkg.sha512"
-  ],
+  "expectedPackageFiles": [],
   "logs": []
 }

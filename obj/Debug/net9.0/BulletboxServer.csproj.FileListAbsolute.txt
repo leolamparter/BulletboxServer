@@ -1,0 +1,15 @@
+/Users/Movies/Bulletbox/BulletboxServer/bin/Debug/net9.0/BulletboxServer
+/Users/Movies/Bulletbox/BulletboxServer/bin/Debug/net9.0/BulletboxServer.deps.json
+/Users/Movies/Bulletbox/BulletboxServer/bin/Debug/net9.0/BulletboxServer.runtimeconfig.json
+/Users/Movies/Bulletbox/BulletboxServer/bin/Debug/net9.0/BulletboxServer.dll
+/Users/Movies/Bulletbox/BulletboxServer/bin/Debug/net9.0/BulletboxServer.pdb
+/Users/Movies/Bulletbox/BulletboxServer/obj/Debug/net9.0/BulletboxServer.GeneratedMSBuildEditorConfig.editorconfig
+/Users/Movies/Bulletbox/BulletboxServer/obj/Debug/net9.0/BulletboxServer.AssemblyInfoInputs.cache
+/Users/Movies/Bulletbox/BulletboxServer/obj/Debug/net9.0/BulletboxServer.AssemblyInfo.cs
+/Users/Movies/Bulletbox/BulletboxServer/obj/Debug/net9.0/BulletboxServer.csproj.CoreCompileInputs.cache
+/Users/Movies/Bulletbox/BulletboxServer/obj/Debug/net9.0/BulletboxServer.sourcelink.json
+/Users/Movies/Bulletbox/BulletboxServer/obj/Debug/net9.0/BulletboxServer.dll
+/Users/Movies/Bulletbox/BulletboxServer/obj/Debug/net9.0/refint/BulletboxServer.dll
+/Users/Movies/Bulletbox/BulletboxServer/obj/Debug/net9.0/BulletboxServer.pdb
+/Users/Movies/Bulletbox/BulletboxServer/obj/Debug/net9.0/BulletboxServer.genruntimeconfig.cache
+/Users/Movies/Bulletbox/BulletboxServer/obj/Debug/net9.0/ref/BulletboxServer.dll
