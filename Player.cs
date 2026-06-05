@@ -30,6 +30,12 @@ public class Player
     public readonly object WriterLock = new();
 
     // The Server's source of truth
+    public struct ItemStack {
+        public byte ItemID;
+        public int Count;
+        public ItemStack(byte id, int count) { ItemID = id; Count = count; }
+    }
+
     public ItemStack[] Inventory = new ItemStack[24];
 
     public Player(TcpClient client)
@@ -113,6 +119,17 @@ public class Player
                         Writer.Write((byte)chunk.Biome);
                         Writer.Write((byte)chunk.Feature);
                         Writer.Flush();
+
+                        // Send structure data for this chunk if it exists
+                        if (world.Structures.TryGetValue((chunkX, chunkY), out var structure))
+                        {
+                            Writer.Write((byte)12); // Packet ID 12: Structure Data
+                            Writer.Write(structure.ChunkX);
+                            Writer.Write(structure.ChunkY);
+                            Writer.Write((byte)structure.Type);
+                            Writer.Write(structure.Position.X);
+                            Writer.Write(structure.Position.Y);
+                        }
                     }
                 }
                 else if (packetId == 6) {

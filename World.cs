@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Numerics;
 
@@ -60,6 +61,9 @@ public class World
     // Key: ChunkCoord, Value: Chunk
     private ConcurrentDictionary<ChunkCoord, Chunk> Chunks = new();
     private static readonly Random rng = new();
+
+    // Storage for world structures like Raid Outposts
+    public ConcurrentDictionary<(int, int), Structure> Structures = new();
     public const int ChunkSize = 16; // Very small chunks
     public int Seed = rng.Next(-1000000, 1000000);
 
@@ -164,6 +168,15 @@ public class World
 
             Chunks[coord] = chunk;
 
+            // Structure Generation: 0.005% chance per chunk (1 in 20,000)
+            if (rng.Next(0, 20000) < 1)
+            {
+                // Place a raid outpost at the center of the chunk
+                Vector2 structurePos = new Vector2(chunkX * ChunkSize + 8, chunkY * ChunkSize + 8);
+                Structure outpost = new Structure(structurePos, StructureType.RaidOutpost, chunkX, chunkY, "");
+                Structures.TryAdd((chunkX, chunkY), outpost);
+                Console.WriteLine($"[World] Generated Raid Outpost at chunk ({chunkX}, {chunkY})");
+            }
         }
         return chunk;
     }
